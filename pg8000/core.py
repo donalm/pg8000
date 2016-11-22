@@ -20,6 +20,7 @@ import pg8000
 from json import loads
 
 from pg8000 import tzutc
+from pg8000 import interval
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.
@@ -52,90 +53,6 @@ __author__ = "Mathieu Fenniak"
 
 
 utc = tzutc.UTC()
-
-
-class Interval(object):
-    """An Interval represents a measurement of time.  In PostgreSQL, an
-    interval is defined in the measure of months, days, and microseconds; as
-    such, the pg8000 interval type represents the same information.
-
-    Note that values of the :attr:`microseconds`, :attr:`days` and
-    :attr:`months` properties are independently measured and cannot be
-    converted to each other.  A month may be 28, 29, 30, or 31 days, and a day
-    may occasionally be lengthened slightly by a leap second.
-
-    .. attribute:: microseconds
-
-        Measure of microseconds in the interval.
-
-        The microseconds value is constrained to fit into a signed 64-bit
-        integer.  Any attempt to set a value too large or too small will result
-        in an OverflowError being raised.
-
-    .. attribute:: days
-
-        Measure of days in the interval.
-
-        The days value is constrained to fit into a signed 32-bit integer.
-        Any attempt to set a value too large or too small will result in an
-        OverflowError being raised.
-
-    .. attribute:: months
-
-        Measure of months in the interval.
-
-        The months value is constrained to fit into a signed 32-bit integer.
-        Any attempt to set a value too large or too small will result in an
-        OverflowError being raised.
-    """
-
-    def __init__(self, microseconds=0, days=0, months=0):
-        self.microseconds = microseconds
-        self.days = days
-        self.months = months
-
-    def _setMicroseconds(self, value):
-        if not isinstance(value, integer_types):
-            raise TypeError("microseconds must be an integer type")
-        elif not (min_int8 < value < max_int8):
-            raise OverflowError(
-                "microseconds must be representable as a 64-bit integer")
-        else:
-            self._microseconds = value
-
-    def _setDays(self, value):
-        if not isinstance(value, integer_types):
-            raise TypeError("days must be an integer type")
-        elif not (min_int4 < value < max_int4):
-            raise OverflowError(
-                "days must be representable as a 32-bit integer")
-        else:
-            self._days = value
-
-    def _setMonths(self, value):
-        if not isinstance(value, integer_types):
-            raise TypeError("months must be an integer type")
-        elif not (min_int4 < value < max_int4):
-            raise OverflowError(
-                "months must be representable as a 32-bit integer")
-        else:
-            self._months = value
-
-    microseconds = property(lambda self: self._microseconds, _setMicroseconds)
-    days = property(lambda self: self._days, _setDays)
-    months = property(lambda self: self._months, _setMonths)
-
-    def __repr__(self):
-        return "<Interval %s months %s days %s microseconds>" % (
-            self.months, self.days, self.microseconds)
-
-    def __eq__(self, other):
-        return other is not None and isinstance(other, Interval) and \
-            self.months == other.months and self.days == other.days and \
-            self.microseconds == other.microseconds
-
-    def __neq__(self, other):
-        return not self.__eq__(other)
 
 
 def pack_funcs(fmt):
@@ -690,7 +607,7 @@ def interval_recv_integer(data, offset, length):
         seconds, micros = divmod(microseconds, 1e6)
         return datetime.timedelta(days, seconds, micros)
     else:
-        return Interval(microseconds, days, months)
+        return interval.Interval(microseconds, days, months)
 
 
 def interval_recv_float(data, offset, length):
@@ -699,7 +616,7 @@ def interval_recv_float(data, offset, length):
         secs, microseconds = divmod(seconds, 1e6)
         return datetime.timedelta(days, secs, microseconds)
     else:
-        return Interval(int(seconds * 1000 * 1000), days, months)
+        return interval.Interval(int(seconds * 1000 * 1000), days, months)
 
 
 def int8_recv(data, offset, length):
@@ -1494,7 +1411,7 @@ class Connection(object):
             # timestamp w/ tz
             1184: (1184, FC_BINARY, timestamptz_send_integer),
             datetime.timedelta: (1186, FC_BINARY, interval_send_integer),
-            Interval: (1186, FC_BINARY, interval_send_integer),
+            interval.Interval: (1186, FC_BINARY, interval_send_integer),
             Decimal: (1700, FC_TEXT, numeric_out),  # Decimal
             UUID: (2950, FC_BINARY, uuid_send),  # uuid
         }
@@ -2119,7 +2036,7 @@ class Connection(object):
                     1184, FC_BINARY, timestamptz_send_integer)
                 self.pg_types[1184] = (FC_BINARY, timestamptz_recv_integer)
 
-                self.py_types[Interval] = (
+                self.py_types[interval.Interval] = (
                     1186, FC_BINARY, interval_send_integer)
                 self.py_types[datetime.timedelta] = (
                     1186, FC_BINARY, interval_send_integer)
@@ -2130,7 +2047,7 @@ class Connection(object):
                 self.py_types[1184] = (1184, FC_BINARY, timestamptz_send_float)
                 self.pg_types[1184] = (FC_BINARY, timestamptz_recv_float)
 
-                self.py_types[Interval] = (
+                self.py_types[interval.Interval] = (
                     1186, FC_BINARY, interval_send_float)
                 self.py_types[datetime.timedelta] = (
                     1186, FC_BINARY, interval_send_float)
