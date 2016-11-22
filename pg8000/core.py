@@ -22,6 +22,7 @@ from json import loads
 from pg8000 import tzutc
 from pg8000 import interval
 from pg8000 import errors
+from pg8000 import startup
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.
@@ -1342,26 +1343,10 @@ class Connection(object):
             COPY_IN_RESPONSE: self.handle_COPY_IN_RESPONSE,
             COPY_OUT_RESPONSE: self.handle_COPY_OUT_RESPONSE}
 
-        # Int32 - Message length, including self.
-        # Int32(196608) - Protocol version number.  Version 3.0.
-        # Any number of key/value pairs, terminated by a zero byte:
-        #   String - A parameter name (user, database, or options)
-        #   String - Parameter value
-        protocol = 196608
-        val = bytearray(
-            i_pack(protocol) + b("user\x00") + self.user + NULL_BYTE)
-        if database is not None:
-            if isinstance(database, text_type):
-                database = database.encode('utf8')
-            val.extend(b("database\x00") + database + NULL_BYTE)
-        if application_name is not None:
-            if isinstance(application_name, text_type):
-                application_name = application_name.encode('utf8')
-            val.extend(b("application_name\x00") + application_name +
-                       NULL_BYTE)
-        val.append(0)
-        self._write(i_pack(len(val) + 4))
-        self._write(val)
+        message = startup.message(user=self.user,
+                                  database=database)
+
+        self._write(message)
         self._flush()
 
         self._cursor = self.cursor()
