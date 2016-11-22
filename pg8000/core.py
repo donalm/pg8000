@@ -19,6 +19,8 @@ import time
 import pg8000
 from json import loads
 
+from pg8000 import tzutc
+
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.
 #
@@ -49,21 +51,7 @@ from json import loads
 __author__ = "Mathieu Fenniak"
 
 
-ZERO = datetime.timedelta(0)
-
-
-class UTC(datetime.tzinfo):
-
-    def utcoffset(self, dt):
-        return ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return ZERO
-
-utc = UTC()
+utc = tzutc.UTC()
 
 
 class Interval(object):
