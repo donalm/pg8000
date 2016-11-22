@@ -21,6 +21,7 @@ from json import loads
 
 from pg8000 import tzutc
 from pg8000 import interval
+from pg8000 import errors
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.
@@ -80,144 +81,6 @@ Struct('!i')
 min_int2, max_int2 = -2 ** 15, 2 ** 15
 min_int4, max_int4 = -2 ** 31, 2 ** 31
 min_int8, max_int8 = -2 ** 63, 2 ** 63
-
-
-class Warning(Exception):
-    """Generic exception raised for important database warnings like data
-    truncations.  This exception is not currently used by pg8000.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class Error(Exception):
-    """Generic exception that is the base exception of all other error
-    exceptions.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class InterfaceError(Error):
-    """Generic exception raised for errors that are related to the database
-    interface rather than the database itself.  For example, if the interface
-    attempts to use an SSL connection but the server refuses, an InterfaceError
-    will be raised.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class DatabaseError(Error):
-    """Generic exception raised for errors that are related to the database.
-    This exception is currently never raised by pg8000.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class DataError(DatabaseError):
-    """Generic exception raised for errors that are due to problems with the
-    processed data.  This exception is not currently raised by pg8000.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class OperationalError(DatabaseError):
-    """
-    Generic exception raised for errors that are related to the database's
-    operation and not necessarily under the control of the programmer. This
-    exception is currently never raised by pg8000.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class IntegrityError(DatabaseError):
-    """
-    Generic exception raised when the relational integrity of the database is
-    affected.  This exception is not currently raised by pg8000.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class InternalError(DatabaseError):
-    """Generic exception raised when the database encounters an internal error.
-    This is currently only raised when unexpected state occurs in the pg8000
-    interface itself, and is typically the result of a interface bug.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class ProgrammingError(DatabaseError):
-    """Generic exception raised for programming errors.  For example, this
-    exception is raised if more parameter fields are in a query string than
-    there are available parameters.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class NotSupportedError(DatabaseError):
-    """Generic exception raised in case a method or database API was used which
-    is not supported by the database.
-
-    This exception is part of the `DBAPI 2.0 specification
-    <http://www.python.org/dev/peps/pep-0249/>`_.
-    """
-    pass
-
-
-class ArrayContentNotSupportedError(NotSupportedError):
-    """
-    Raised when attempting to transmit an array where the base type is not
-    supported for binary data transfer by the interface.
-    """
-    pass
-
-
-class ArrayContentNotHomogenousError(ProgrammingError):
-    """
-    Raised when attempting to transmit an array that doesn't contain only a
-    single type of object.
-    """
-    pass
-
-
-class ArrayContentEmptyError(ProgrammingError):
-    """Raised when attempting to transmit an empty array. The type oid of an
-    empty array cannot be determined, and so sending them is not permitted.
-    """
-    pass
-
-
-class ArrayDimensionsNotConsistentError(ProgrammingError):
-    """
-    Raised when attempting to transmit an array that has inconsistent
-    multi-dimension sizes.
-    """
-    pass
 
 
 class Bytea(binary_type):
@@ -382,7 +245,7 @@ def convert_paramstyle(style, query):
                         state = INSIDE_PN
                         output_query.append(next(param_idx))
                     else:
-                        raise InterfaceError(
+                        raise errors.InterfaceError(
                             "Only %s and %% are supported in the query.")
             else:
                 output_query.append(c)
@@ -406,7 +269,7 @@ def convert_paramstyle(style, query):
                     if next_c == "%":
                         in_param_escape = True
                     else:
-                        raise InterfaceError(
+                        raise errors.InterfaceError(
                             "'%" + next_c + "' not supported in a quoted "
                             "string within the query string")
             else:
@@ -425,7 +288,7 @@ def convert_paramstyle(style, query):
                     if next_c == "%":
                         in_param_escape = True
                     else:
-                        raise InterfaceError(
+                        raise errors.InterfaceError(
                             "'%" + next_c + "' not supported in a quoted "
                             "string within the query string")
             else:
@@ -445,7 +308,7 @@ def convert_paramstyle(style, query):
                     if next_c == "%":
                         in_param_escape = True
                     else:
-                        raise InterfaceError(
+                        raise errors.InterfaceError(
                             "'%" + next_c + "' not supported in a quoted "
                             "string within the query string.")
             else:
@@ -812,9 +675,9 @@ class Cursor():
                 self._c.execute(self, operation, args)
         except AttributeError as e:
             if self._c is None:
-                raise InterfaceError("Cursor closed")
+                raise errors.InterfaceError("Cursor closed")
             elif self._c._sock is None:
-                raise InterfaceError("connection is closed")
+                raise errors.InterfaceError("connection is closed")
             else:
                 raise e
 
@@ -854,9 +717,9 @@ class Cursor():
         except StopIteration:
             return None
         except TypeError:
-            raise ProgrammingError("attempting to use unexecuted cursor")
+            raise errors.ProgrammingError("attempting to use unexecuted cursor")
         except AttributeError:
-            raise ProgrammingError("attempting to use unexecuted cursor")
+            raise errors.ProgrammingError("attempting to use unexecuted cursor")
 
     def fetchmany(self, num=None):
         """Fetches the next set of rows of a query result.
@@ -879,7 +742,7 @@ class Cursor():
             return tuple(
                 islice(self, self.arraysize if num is None else num))
         except TypeError:
-            raise ProgrammingError("attempting to use unexecuted cursor")
+            raise errors.ProgrammingError("attempting to use unexecuted cursor")
 
     def fetchall(self):
         """Fetches all remaining rows of a query result.
@@ -895,7 +758,7 @@ class Cursor():
         try:
             return tuple(self)
         except TypeError:
-            raise ProgrammingError("attempting to use unexecuted cursor")
+            raise errors.ProgrammingError("attempting to use unexecuted cursor")
 
     def close(self):
         """Closes the cursor.
@@ -942,9 +805,9 @@ class Cursor():
                     return self._cached_rows.popleft()
                 except IndexError:
                     if self.ps is None:
-                        raise ProgrammingError("A query hasn't been issued.")
+                        raise errors.ProgrammingError("A query hasn't been issued.")
                     elif len(self.ps['row_desc']) == 0:
-                        raise ProgrammingError("no result set")
+                        raise errors.ProgrammingError("no result set")
                     else:
                         raise StopIteration()
 
@@ -1098,16 +961,16 @@ class Connection(object):
     """
 
     # DBAPI Extension: supply exceptions as attributes on the connection
-    Warning = property(lambda self: self._getError(Warning))
-    Error = property(lambda self: self._getError(Error))
-    InterfaceError = property(lambda self: self._getError(InterfaceError))
-    DatabaseError = property(lambda self: self._getError(DatabaseError))
-    OperationalError = property(lambda self: self._getError(OperationalError))
-    IntegrityError = property(lambda self: self._getError(IntegrityError))
-    InternalError = property(lambda self: self._getError(InternalError))
-    ProgrammingError = property(lambda self: self._getError(ProgrammingError))
+    Warning = property(lambda self: self._getError(errors.Warning))
+    Error = property(lambda self: self._getError(errors.Error))
+    InterfaceError = property(lambda self: self._getError(errors.InterfaceError))
+    DatabaseError = property(lambda self: self._getError(errors.DatabaseError))
+    OperationalError = property(lambda self: self._getError(errors.OperationalError))
+    IntegrityError = property(lambda self: self._getError(errors.IntegrityError))
+    InternalError = property(lambda self: self._getError(errors.InternalError))
+    ProgrammingError = property(lambda self: self._getError(errors.ProgrammingError))
     NotSupportedError = property(
-        lambda self: self._getError(NotSupportedError))
+        lambda self: self._getError(errors.NotSupportedError))
 
     # Determines the number of rows to read from the database server at once.
     # Reading more rows increases performance at the cost of memory.  The
@@ -1133,7 +996,7 @@ class Connection(object):
         self._lock = threading.Lock()
 
         if user is None:
-            raise InterfaceError(
+            raise errors.InterfaceError(
                 "The 'user' connection parameter cannot be None")
 
         if isinstance(user, text_type):
@@ -1158,12 +1021,12 @@ class Connection(object):
                 self._usock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             elif unix_sock is not None:
                 if not hasattr(socket, "AF_UNIX"):
-                    raise InterfaceError(
+                    raise errors.InterfaceError(
                         "attempt to connect to unix socket on unsupported "
                         "platform")
                 self._usock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             else:
-                raise ProgrammingError(
+                raise errors.ProgrammingError(
                     "one of host or unix_sock must be provided")
             if not PY2 and timeout is not None:
                 self._usock.settimeout(timeout)
@@ -1184,16 +1047,16 @@ class Connection(object):
                         if resp == b('S'):
                             self._usock = sslmodule.wrap_socket(self._usock)
                         else:
-                            raise InterfaceError("Server refuses SSL")
+                            raise errors.InterfaceError("Server refuses SSL")
                     except ImportError:
-                        raise InterfaceError(
+                        raise errors.InterfaceError(
                             "SSL required but ssl module not available in "
                             "this python installation")
 
             self._sock = self._usock.makefile(mode="rwb")
         except socket.error as e:
             self._usock.close()
-            raise InterfaceError("communication error", e)
+            raise errors.InterfaceError("communication error", e)
         self._flush = self._sock.flush
         self._read = self._sock.read
         self._write = self._sock.write
@@ -1527,12 +1390,12 @@ class Connection(object):
             data.split(NULL_BYTE) if s != b(''))
         exc_args = itervalues(msg)
         if msg[RESPONSE_CODE] == "28000":
-            self.error = InterfaceError(*exc_args)
+            self.error = errors.InterfaceError(*exc_args)
         else:
-            self.error = ProgrammingError(*exc_args)
+            self.error = errors.ProgrammingError(*exc_args)
 
     def handle_EMPTY_QUERY_RESPONSE(self, data, ps):
-        self.error = ProgrammingError("query was empty")
+        self.error = errors.ProgrammingError("query was empty")
 
     def handle_CLOSE_COMPLETE(self, data, ps):
         pass
@@ -1567,7 +1430,7 @@ class Connection(object):
         is_binary, num_cols = bh_unpack(data)
         # column_formats = unpack_from('!' + 'h' * num_cols, data, 3)
         if ps.stream is None:
-            raise InterfaceError(
+            raise errors.InterfaceError(
                 "An output stream is required for the COPY OUT response.")
 
     def handle_COPY_DATA(self, data, ps):
@@ -1580,7 +1443,7 @@ class Connection(object):
         # column_formats = unpack_from('!' + 'h' * num_cols, data, 3)
         assert self._lock.locked()
         if ps.stream is None:
-            raise InterfaceError(
+            raise errors.InterfaceError(
                 "An input stream is required for the COPY IN response.")
 
         if PY2:
@@ -1666,11 +1529,11 @@ class Connection(object):
             self._flush()
             self._sock.close()
         except AttributeError:
-            raise InterfaceError("connection is closed")
+            raise errors.InterfaceError("connection is closed")
         except ValueError:
-            raise InterfaceError("connection is closed")
+            raise errors.InterfaceError("connection is closed")
         except socket.error as e:
-            raise OperationalError(str(e))
+            raise errors.OperationalError(str(e))
         finally:
             self._usock.close()
             self._sock = None
@@ -1705,7 +1568,7 @@ class Connection(object):
             pass
         elif auth_code == 3:
             if self.password is None:
-                raise InterfaceError(
+                raise errors.InterfaceError(
                     "server requesting password authentication, but no "
                     "password was provided")
             self._send_message(PASSWORD, self.password + NULL_BYTE)
@@ -1720,7 +1583,7 @@ class Connection(object):
             #  Byte4 - Hash salt.
             salt = b("").join(cccc_unpack(data, 4))
             if self.password is None:
-                raise InterfaceError(
+                raise errors.InterfaceError(
                     "server requesting MD5 password authentication, but no "
                     "password was provided")
             pwd = b("md5") + md5(
@@ -1733,11 +1596,11 @@ class Connection(object):
             self._flush()
 
         elif auth_code in (2, 4, 6, 7, 8, 9):
-            raise InterfaceError(
+            raise errors.InterfaceError(
                 "Authentication method " + str(auth_code) +
                 " not supported by pg8000.")
         else:
-            raise InterfaceError(
+            raise errors.InterfaceError(
                 "Authentication method " + str(auth_code) +
                 " not recognized by pg8000.")
 
@@ -1764,7 +1627,7 @@ class Connection(object):
                 try:
                     params.append(self.inspect_funcs[typ](value))
                 except KeyError as e:
-                    raise NotSupportedError(
+                    raise errors.NotSupportedError(
                         "type " + str(e) + "not mapped to pg type")
         return tuple(params)
 
@@ -1844,11 +1707,11 @@ class Connection(object):
                 self._flush()
             except AttributeError as e:
                 if self._sock is None:
-                    raise InterfaceError("connection is closed")
+                    raise errors.InterfaceError("connection is closed")
                 else:
                     raise e
             except socket.error as e:
-                raise OperationalError(str(e))
+                raise errors.OperationalError(str(e))
 
             self.handle_messages(cursor)
 
@@ -1924,7 +1787,7 @@ class Connection(object):
         self.handle_messages(cursor)
         if cursor.portal_suspended:
             if self.autocommit:
-                raise InterfaceError(
+                raise errors.InterfaceError(
                     "With autocommit on, it's not possible to retrieve more "
                     "rows than the pg8000 cache size, as the portal is closed "
                     "when the transaction is closed.")
@@ -1940,11 +1803,11 @@ class Connection(object):
             self._write(FLUSH_MSG)
         except ValueError as e:
             if str(e) == "write to closed file":
-                raise InterfaceError("connection is closed")
+                raise errors.InterfaceError("connection is closed")
             else:
                 raise e
         except AttributeError:
-            raise InterfaceError("connection is closed")
+            raise errors.InterfaceError("connection is closed")
 
     def send_EXECUTE(self, cursor):
         # Byte1('E') - Identifies the message as an execute message.
@@ -2069,7 +1932,7 @@ class Connection(object):
         # array oid.
         first_element = array_find_first_element(value)
         if first_element is None:
-            raise ArrayContentEmptyError("array has no values")
+            raise errors.ArrayContentEmptyError("array has no values")
 
         # supported array output
         typ = type(first_element)
@@ -2100,7 +1963,7 @@ class Connection(object):
                 array_oid = 1016  # INT8[]
                 oid, fc, send_func = (20, FC_BINARY, q_pack)
             else:
-                raise ArrayContentNotSupportedError(
+                raise errors.ArrayContentNotSupportedError(
                     "numeric not supported as array contents")
         else:
             try:
@@ -2114,10 +1977,10 @@ class Connection(object):
                     fc = FC_BINARY
                 array_oid = pg_array_types[oid]
             except KeyError:
-                raise ArrayContentNotSupportedError(
+                raise errors.ArrayContentNotSupportedError(
                     "oid " + str(oid) + " not supported as array contents")
-            except NotSupportedError:
-                raise ArrayContentNotSupportedError(
+            except errors.NotSupportedError:
+                raise errors.ArrayContentNotSupportedError(
                     "type " + str(typ) + " not supported as array contents")
 
         if fc == FC_BINARY:
@@ -2125,7 +1988,7 @@ class Connection(object):
                 # check for homogenous array
                 for a, i, v in walk_array(arr):
                     if not isinstance(v, (typ, type(None))):
-                        raise ArrayContentNotHomogenousError(
+                        raise errors.ArrayContentNotHomogenousError(
                             "not all array elements are of type " + str(typ))
 
                 # check that all array dimensions are consistent
@@ -2148,7 +2011,7 @@ class Connection(object):
             def send_array(arr):
                 for a, i, v in walk_array(arr):
                     if not isinstance(v, (typ, type(None))):
-                        raise ArrayContentNotHomogenousError(
+                        raise errors.ArrayContentNotHomogenousError(
                             "not all array elements are of type " + str(typ))
                 array_check_dimensions(arr)
                 ar = deepcopy(arr)
@@ -2222,7 +2085,7 @@ class Connection(object):
             xid = self._xid
 
         if xid is None:
-            raise ProgrammingError(
+            raise errors.ProgrammingError(
                 "Cannot tpc_commit() without a TPC transaction!")
 
         try:
@@ -2257,7 +2120,7 @@ class Connection(object):
             xid = self._xid
 
         if xid is None:
-            raise ProgrammingError(
+            raise errors.ProgrammingError(
                 "Cannot tpc_rollback() without a TPC prepared transaction!")
 
         try:
@@ -2389,7 +2252,7 @@ def array_check_dimensions(arr):
         for v in arr:
             inner_lengths = array_check_dimensions(v)
             if len(v) != req_len or inner_lengths != req_inner_lengths:
-                raise ArrayDimensionsNotConsistentError(
+                raise errors.ArrayDimensionsNotConsistentError(
                     "array dimensions not consistent")
         retval = [req_len]
         retval.extend(req_inner_lengths)
@@ -2398,7 +2261,7 @@ def array_check_dimensions(arr):
         # make sure nothing else at this level is a list
         for v in arr:
             if isinstance(v, list):
-                raise ArrayDimensionsNotConsistentError(
+                raise errors.ArrayDimensionsNotConsistentError(
                     "array dimensions not consistent")
         return []
 
