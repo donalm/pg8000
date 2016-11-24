@@ -102,7 +102,7 @@ class StartupMessage(object):
     def make_argument(cls, key, value):
 
         if isinstance(key, six.text_type):
-            key = key.encode('utf8')        
+            key = key.encode('utf8')
 
         if not isinstance(key, six.binary_type):
             raise errors.ProgrammingError(
