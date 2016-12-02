@@ -4,7 +4,10 @@ from .core import (
     ArrayContentNotHomogenousError, ArrayContentEmptyError,
     ArrayDimensionsNotConsistentError, ArrayContentNotSupportedError, utc,
     Connection, Cursor, Binary, Date, DateFromTicks, Time, TimeFromTicks,
-    Timestamp, TimestampFromTicks, BINARY, Interval)
+    Timestamp, TimestampFromTicks, BINARY)
+
+from .interval import Interval
+
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
