@@ -149,7 +149,7 @@ class PostgresTranslate(object):
             ipaddress.IPv6Address: (869,  self.FC_TEXT,   self.inet_out),  # inet
             ipaddress.IPv4Network: (869,  self.FC_TEXT,   self.inet_out),  # inet
             ipaddress.IPv6Network: (869,  self.FC_TEXT,   self.inet_out)   # inet
-        }
+        })
 
         if six.PY2:
             self.py_types[types.Bytea]   = (17,  self.FC_BINARY, self.bytea_send)  # bytea
