@@ -95,17 +95,17 @@ class Constants(object):
 
     try:
         HOSTNAME = socket.gethostname()
-    except Exception, e:
+    except Exception as e:
         HOSTNAME = "UNKNOWNHOST"
 
     try:
         PID = str(os.getpid())
-    except Exception, e:
+    except Exception as e:
         PID = "UNKNOWNPID"
 
     try:
         EXECUTABLE = os.path.basename(sys.executable)
-    except Exception, e:
+    except Exception as e:
         EXECUTABLE = "UNKNOWNEXECUTABLE"
 
     APPLICATION_NAME = "%s_%s_%s" % (HOSTNAME, PID, EXECUTABLE,)
