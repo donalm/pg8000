@@ -27,6 +27,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import six
 
 class Interval(object):
     """An Interval represents a measurement of time.  In PostgreSQL, an
@@ -74,7 +75,7 @@ class Interval(object):
         self.months = months
 
     def _setMicroseconds(self, value):
-        if not isinstance(value, integer_types):
+        if not isinstance(value, six.integer_types):
             raise TypeError("microseconds must be an integer type")
         elif not (Interval.min_int8 < value < Interval.max_int8):
             raise OverflowError(
@@ -83,7 +84,7 @@ class Interval(object):
             self._microseconds = value
 
     def _setDays(self, value):
-        if not isinstance(value, integer_types):
+        if not isinstance(value, six.integer_types):
             raise TypeError("days must be an integer type")
         elif not (Interval.min_int4 < value < Interval.max_int4):
             raise OverflowError(
@@ -92,7 +93,7 @@ class Interval(object):
             self._days = value
 
     def _setMonths(self, value):
-        if not isinstance(value, integer_types):
+        if not isinstance(value, six.integer_types):
             raise TypeError("months must be an integer type")
         elif not (Interval.min_int4 < value < Interval.max_int4):
             raise OverflowError(
