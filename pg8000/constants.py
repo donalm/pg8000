@@ -33,6 +33,11 @@ import six
 import socket
 
 class Constants(object):
+
+    # Field constants
+    FC_TEXT = 0
+    FC_BINARY = 1
+
     # Default protocol version
     VERSION_MAJOR    = 3
     VERSION_MINOR    = 0
