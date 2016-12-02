@@ -1,5 +1,4 @@
 import datetime
-from datetime import timedelta
 from warnings import warn
 import socket
 import threading
@@ -50,7 +49,7 @@ from json import loads
 __author__ = "Mathieu Fenniak"
 
 
-ZERO = timedelta(0)
+ZERO = datetime.timedelta(0)
 
 
 class UTC(datetime.tzinfo):
@@ -599,7 +598,7 @@ MINUS_INFINITY_MICROSECONDS = -1 * INFINITY_MICROSECONDS - 1
 def timestamp_recv_integer(data, offset, length):
     micros = q_unpack(data, offset)[0]
     try:
-        return EPOCH + timedelta(microseconds=micros)
+        return EPOCH + datetime.timedelta(microseconds=micros)
     except OverflowError as e:
         if micros == INFINITY_MICROSECONDS:
             return datetime.datetime.max
@@ -653,7 +652,7 @@ DATETIME_MIN_TZ = datetime.datetime.min.replace(tzinfo=utc)
 def timestamptz_recv_integer(data, offset, length):
     micros = q_unpack(data, offset)[0]
     try:
-        return EPOCH_TZ + timedelta(microseconds=micros)
+        return EPOCH_TZ + datetime.timedelta(microseconds=micros)
     except OverflowError as e:
         if micros == INFINITY_MICROSECONDS:
             return DATETIME_MAX_TZ
