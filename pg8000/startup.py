@@ -119,8 +119,8 @@ class StartupMessage(object):
                 "message value '%s'" % (type(value), value,)
             )
 
-        return six.b(key)   + cls.translator.null_byte + \
-               six.b(value) + cls.translator.null_byte
+        return key   + cls.translator.null_byte + \
+               value + cls.translator.null_byte
 
 
 def message(database, user, application_name=None):
