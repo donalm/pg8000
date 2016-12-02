@@ -1,12 +1,24 @@
 from .core import (
-    Warning, Bytea, DataError, DatabaseError, InterfaceError, ProgrammingError,
-    Error, OperationalError, IntegrityError, InternalError, NotSupportedError,
-    ArrayContentNotHomogenousError, ArrayContentEmptyError,
-    ArrayDimensionsNotConsistentError, ArrayContentNotSupportedError, utc,
+    Bytea, utc,
     Connection, Cursor, Binary, Date, DateFromTicks, Time, TimeFromTicks,
     Timestamp, TimestampFromTicks, BINARY)
 
 from .interval import Interval
+
+from .errors import Warning
+from .errors import Error
+from .errors import DataError
+from .errors import DatabaseError
+from .errors import InterfaceError
+from .errors import ProgrammingError
+from .errors import OperationalError
+from .errors import IntegrityError
+from .errors import InternalError
+from .errors import NotSupportedError
+from .errors import ArrayContentNotHomogenousError
+from .errors import ArrayContentEmptyError
+from .errors import ArrayDimensionsNotConsistentError
+from .errors import ArrayContentNotSupportedError
 
 from ._version import get_versions
 __version__ = get_versions()['version']
