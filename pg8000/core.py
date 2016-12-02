@@ -1344,7 +1344,8 @@ class Connection(object):
             COPY_OUT_RESPONSE: self.handle_COPY_OUT_RESPONSE}
 
         message = startup.message(user=self.user,
-                                  database=database)
+                                  database=database,
+                                  application_name=application_name)
 
         self._write(message)
         self._flush()
