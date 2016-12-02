@@ -7,7 +7,11 @@ import struct
 import decimal
 import datetime
 import calendar
-import ipaddress
+
+try:
+    import ipaddress
+except ImportError:
+    ipaddress = None
 
 from collections import defaultdict
 
@@ -128,10 +132,6 @@ class PostgresTranslate(object):
             bool:                  (16,   self.FC_BINARY, self.bool_send),
             int:                   (705,  self.FC_TEXT,   self.unknown_out),
             float:                 (701,  self.FC_BINARY, self.d_pack),  # float8
-            ipaddress.IPv4Address: (869,  self.FC_TEXT,   self.inet_out),  # inet
-            ipaddress.IPv6Address: (869,  self.FC_TEXT,   self.inet_out),  # inet
-            ipaddress.IPv4Network: (869,  self.FC_TEXT,   self.inet_out),  # inet
-            ipaddress.IPv6Network: (869,  self.FC_TEXT,   self.inet_out),  # inet
             datetime.date:         (1082, self.FC_TEXT,   self.date_out),  # date
             datetime.time:         (1083, self.FC_TEXT,   self.time_out),  # time
             1114:                  (1114, self.FC_BINARY, self.timestamp_send_integer),  # timestamp
@@ -141,6 +141,14 @@ class PostgresTranslate(object):
             interval.Interval:     (1186, self.FC_BINARY, self.interval_send_integer),
             decimal.Decimal:       (1700, self.FC_TEXT,   self.numeric_out),  # Decimal
             uuid.UUID:             (2950, self.FC_BINARY, self.uuid_send),  # uuid
+        }
+
+        if ipaddress is not None:
+            self.py_types.update({
+            ipaddress.IPv4Address: (869,  self.FC_TEXT,   self.inet_out),  # inet
+            ipaddress.IPv6Address: (869,  self.FC_TEXT,   self.inet_out),  # inet
+            ipaddress.IPv4Network: (869,  self.FC_TEXT,   self.inet_out),  # inet
+            ipaddress.IPv6Network: (869,  self.FC_TEXT,   self.inet_out)   # inet
         }
 
         if six.PY2:
