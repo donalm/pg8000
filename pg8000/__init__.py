@@ -1,9 +1,10 @@
 from .core import (
-    Bytea, utc,
+    utc,
     Connection, Cursor, Binary, Date, DateFromTicks, Time, TimeFromTicks,
     Timestamp, TimestampFromTicks, BINARY)
 
 from .interval import Interval
+from .types import Bytea
 
 from .errors import Warning
 from .errors import Error

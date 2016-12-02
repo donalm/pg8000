@@ -22,6 +22,7 @@ from json import loads
 from pg8000 import tzutc
 from pg8000 import interval
 from pg8000 import errors
+from pg8000 import types
 
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
@@ -82,14 +83,6 @@ Struct('!i')
 min_int2, max_int2 = -2 ** 15, 2 ** 15
 min_int4, max_int4 = -2 ** 31, 2 ** 31
 min_int8, max_int8 = -2 ** 63, 2 ** 63
-
-
-class Bytea(binary_type):
-    """Bytea is a str-derived class that is mapped to a PostgreSQL byte array.
-    This class is only used in Python 2, the built-in ``bytes`` type is used in
-    Python 3.
-    """
-    pass
 
 
 def Date(year, month, day):
@@ -170,12 +163,12 @@ def Binary(value):
     :rtype: :class:`pg8000.types.Bytea` for Python 2, otherwise :class:`bytes`
     """
     if PY2:
-        return Bytea(value)
+        return types.Bytea(value)
     else:
         return value
 
 if PY2:
-    BINARY = Bytea
+    BINARY = types.Bytea
 else:
     BINARY = bytes
 
@@ -509,7 +502,7 @@ def bytea_send(v):
 # bytea
 if PY2:
     def bytea_recv(data, offset, length):
-        return Bytea(data[offset:offset + length])
+        return types.Bytea(data[offset:offset + length])
 else:
     def bytea_recv(data, offset, length):
         return data[offset:offset + length]
@@ -1287,7 +1280,7 @@ class Connection(object):
         }
 
         if PY2:
-            self.py_types[Bytea] = (17, FC_BINARY, bytea_send)  # bytea
+            self.py_types[types.Bytea] = (17, FC_BINARY, bytea_send)  # bytea
             self.py_types[text_type] = (705, FC_TEXT, text_out)  # unknown
             self.py_types[str] = (705, FC_TEXT, bytea_send)  # unknown
 
