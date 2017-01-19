@@ -1620,7 +1620,7 @@ class Connection(object):
     def handle_ERROR_RESPONSE(self, data, ps):
         msg = OrderedDict(
             (s[:1], s[1:].decode(self._client_encoding)) for s in
-            data.split(NULL_BYTE) if s != b(''))
+            data.split(NULL_BYTE) if s != b('') and s[:1] != b('V'))
         exc_args = itervalues(msg)
         if msg[RESPONSE_CODE] == "28000":
             self.error = InterfaceError(*exc_args)
