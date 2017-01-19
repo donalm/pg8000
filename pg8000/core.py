@@ -3,6 +3,7 @@ from datetime import timedelta
 from warnings import warn
 import socket
 import threading
+import struct
 from struct import pack
 from hashlib import md5
 from decimal import Decimal
@@ -2087,9 +2088,19 @@ class Connection(object):
 
         try:
             while code != READY_FOR_QUERY:
-                code, data_len = ci_unpack(self._read(5))
+                chunk = self._read(5)
+                code, data_len = ci_unpack(chunk)
                 self.message_types[code](self._read(data_len - 4), cursor)
-        except:
+        except socket.error as e:
+            self.error = OperationalError(str(e))
+        except struct.error as e:
+            if len(chunk) == 0:
+                self.error = OperationalError(
+                    "No data to read from socket"
+                )
+            else:
+                self.error = OperationalError(str(e))
+        except Exception:
             self._close()
             raise
 
