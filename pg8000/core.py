@@ -1839,14 +1839,14 @@ class Connection(object):
                 code, data_len = ci_unpack(chunk)
                 self.message_types[code](self._read(data_len - 4), cursor)
         except socket.error as e:
-            self.error = OperationalError(str(e))
+            self.error = errors.OperationalError(str(e))
         except struct.error as e:
             if len(chunk) == 0:
-                self.error = OperationalError(
+                self.error = errors.OperationalError(
                     "No data to read from socket"
                 )
             else:
-                self.error = OperationalError(str(e))
+                self.error = errors.OperationalError(str(e))
         except Exception:
             self._close()
             raise
