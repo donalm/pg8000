@@ -233,12 +233,12 @@ class Tests(unittest.TestCase):
         try:
             import ipaddress
 
-            v = ipaddress.ip_network('192.168.0.0/28')
+            v = ipaddress.ip_network(u'192.168.0.0/28')
             self.cursor.execute("select %s as f1", (v,))
             retval = self.cursor.fetchall()
             self.assertEqual(retval[0][0], v)
 
-            v = ipaddress.ip_address('192.168.0.1')
+            v = ipaddress.ip_address(u'192.168.0.1')
             self.cursor.execute("select %s as f1", (v,))
             retval = self.cursor.fetchall()
             self.assertEqual(retval[0][0], v)
